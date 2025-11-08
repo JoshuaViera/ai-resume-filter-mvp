@@ -1,69 +1,51 @@
 'use client';
 
+// FIX: Import the REAL FilteredCandidate type
 import { FilteredCandidate } from '@/types';
-import { Download, Mail, Phone, MapPin, Award } from 'lucide-react';
+import { Download, Mail, Phone, MapPin, Award, RotateCcw } from 'lucide-react';
 
 interface ResultsTableProps {
   candidates: FilteredCandidate[];
   sessionId: string;
+  onReset: () => void; // <-- Add the onReset prop
 }
 
-export default function ResultsTable({ candidates, sessionId }: ResultsTableProps) {
-  if (candidates.length === 0) {
-    return (
-      <div className="text-center py-16 bg-coral/10 border-2 border-coral rounded-xl">
-        <div className="max-w-md mx-auto space-y-4">
-          <div className="text-6xl mb-4">🔍</div>
-          <h3 className="text-xl font-bold text-graphite mb-2">
-            No candidates matched your criteria
-          </h3>
-          <p className="text-ink/70 text-sm mb-6">
-            No resumes met both your skill requirements and distance filter.
-          </p>
-          <div className="bg-white backdrop-blur-sm rounded-lg p-4 text-left shadow-sm">
-            <p className="text-sm font-semibold text-graphite mb-2">💡 Try these suggestions:</p>
-            <ul className="text-sm text-ink/70 space-y-1 ml-4">
-              <li>• Increase the maximum commute distance</li>
-              <li>• Reduce or adjust your required keywords</li>
-              <li>• Verify candidate resumes include location data</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+export default function ResultsTable({ candidates, sessionId, onReset }: ResultsTableProps) {
+  
   const downloadCSV = () => {
     const headers = [
       'Name',
       'Email',
       'Phone',
-      'Address',
-      'Distance (miles)',
-      'Commute',
+      // REMOVED: Address
+      // REMOVED: Distance (miles)
       'Matched Skills',
       'Skill Score',
       'Overall Score',
+      'Resume URL'
     ];
 
     const rows = candidates.map(c => [
       c.candidateName,
       c.email,
       c.phone,
-      c.address,
-      c.distanceMiles.toFixed(1),
-      c.commuteEstimate,
+      // REMOVED: c.address
+      // REMOVED: c.distanceMiles
       c.matchedSkills.join('; '),
       c.skillMatchScore.toString(),
       c.overallScore.toString(),
+      c.resumeUrl,
     ]);
+
+    // Helper to escape CSV fields
+    const escapeCSV = (field: string) => `"${String(field).replace(/"/g, '""')}"`;
 
     const csvContent = [
       headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
+      ...rows.map(row => row.map(escapeCSV).join(',')),
     ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -72,55 +54,73 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
     window.URL.revokeObjectURL(url);
   };
 
-  return (
-    <div className="w-full space-y-4">
-      <div className="flex items-center justify-between bg-mint/10 p-4 rounded-lg border border-silver">
-        <div>
-          <h2 className="text-2xl font-bold text-graphite">
-            Top Candidates
-          </h2>
-          <p className="text-sm text-ink/70 mt-1">
-            {candidates.length} {candidates.length === 1 ? 'candidate' : 'candidates'} matched your criteria
-          </p>
-        </div>
+  // Handle no matching candidates
+  if (candidates.length === 0) {
+    return (
+      <div className="text-center py-12 bg-gray-50 rounded-lg">
+        <p className="text-gray-600 text-xl font-semibold">No candidates matched your criteria</p>
+        <p className="text-gray-500 text-md mt-2">
+          Try adjusting your keywords
+        </p>
         <button
-          onClick={downloadCSV}
-          className="flex items-center gap-2 px-5 py-2.5 bg-sky text-white rounded-lg hover:bg-sky/90 transition-all hover:shadow-md font-medium"
+          onClick={onReset}
+          className="mt-6 flex items-center gap-2 mx-auto px-5 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
         >
-          <Download size={18} />
-          Export CSV
+          <RotateCcw size={18} />
+          Start Over
         </button>
       </div>
+    );
+  }
 
-      <div className="space-y-3 lg:hidden">
+  return (
+    <div className="w-full space-y-6">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <h2 className="text-3xl font-bold text-gray-900">
+          Ranked Candidates ({candidates.length})
+        </h2>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onReset}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors border border-gray-300"
+          >
+            <RotateCcw size={18} />
+            Start Over
+          </button>
+          <button
+            onClick={downloadCSV}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+          >
+            <Download size={18} />
+            Export CSV
+          </button>
+        </div>
+      </div>
+
+      {/* --- Mobile/Card View --- */}
+      <div className="space-y-4 lg:hidden">
         {candidates.map((candidate) => (
           <div
             key={candidate.id}
-            className="bg-white border border-silver rounded-xl p-5 space-y-3 hover:border-sky transition-colors shadow-sm"
+            className="bg-white border border-gray-200 rounded-lg p-4 space-y-3 shadow"
           >
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="font-semibold text-lg text-graphite">
                   {candidate.candidateName}
                 </h3>
-                <div className="flex items-center gap-3 mt-2">
-                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-mint/20 text-ink text-xs font-medium rounded">
-                    <Award size={12} />
+                <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                  <span className="flex items-center gap-1 font-bold text-indigo-600">
+                    <Award size={14} />
                     Score: {candidate.overallScore}
                   </span>
-                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-sky/10 text-ink text-xs font-medium rounded border border-sky/20">
-                    <MapPin size={12} className="text-sky" />
-                    <span className="font-semibold">{candidate.distanceMiles.toFixed(1)} mi</span>
-                    <span className="text-sky">•</span>
-                    <span>{candidate.commuteEstimate}</span>
-                  </span>
+                  {/* REMOVED: Distance span */}
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2 text-sm">
+            <div className="space-y-2 text-sm border-t pt-3">
               {candidate.email && (
-                
                   <a href={`mailto:${candidate.email}`}
                   className="flex items-center gap-2 text-sky hover:underline"
                 >
@@ -129,7 +129,6 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
                 </a>
               )}
               {candidate.phone && (
-                
                   <a href={`tel:${candidate.phone}`}
                   className="flex items-center gap-2 text-sky hover:underline"
                 >
@@ -140,8 +139,8 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
             </div>
 
             {candidate.matchedSkills.length > 0 && (
-              <div>
-                <p className="text-xs font-medium text-ink/60 mb-1">Matched Skills:</p>
+              <div className="border-t pt-3">
+                <p className="text-xs font-medium text-gray-500 mb-1">Matched Skills:</p>
                 <div className="flex flex-wrap gap-1">
                   {candidate.matchedSkills.map((skill, idx) => (
                     <span
@@ -155,11 +154,10 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
               </div>
             )}
 
-            
              <a  href={candidate.resumeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block text-sm text-sky hover:underline font-medium"
+              className="inline-block text-sm font-semibold text-blue-600 hover:underline pt-2"
             >
               View Resume
             </a>
@@ -167,9 +165,10 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
         ))}
       </div>
 
-      <div className="hidden lg:block overflow-x-auto rounded-xl border border-silver shadow-sm">
-        <table className="w-full border-collapse bg-white">
-          <thead className="bg-fog">
+      {/* --- Desktop/Table View --- */}
+      <div className="hidden lg:block overflow-x-auto">
+        <table className="w-full border-collapse bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+          <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-4 text-left text-xs font-semibold text-graphite uppercase tracking-wider">
                 Candidate
@@ -177,10 +176,8 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
               <th className="px-6 py-4 text-left text-xs font-semibold text-graphite uppercase tracking-wider">
                 Contact
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-graphite uppercase tracking-wider">
-                Distance & Commute
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-graphite uppercase tracking-wider">
+              {/* REMOVED: Location Header */}
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Matched Skills
               </th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-graphite uppercase tracking-wider">
@@ -193,14 +190,13 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
           </thead>
           <tbody className="divide-y divide-silver">
             {candidates.map((candidate) => (
-              <tr key={candidate.id} className="hover:bg-fog transition-colors">
+              <tr key={candidate.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4">
-                  <div className="font-medium text-graphite">{candidate.candidateName}</div>
-                  <div className="text-sm text-ink/60 mt-1">{candidate.address}</div>
+                  <div className="font-medium text-gray-900">{candidate.candidateName}</div>
+                  {/* REMOVED: address div */}
                 </td>
                 <td className="px-6 py-4 text-sm">
                   {candidate.email && (
-                    
                     <a   href={`mailto:${candidate.email}`}
                       className="text-sky hover:underline block"
                     >
@@ -208,7 +204,6 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
                     </a>
                   )}
                   {candidate.phone && (
-                    
                       <a href={`tel:${candidate.phone}`}
                       className="text-sky hover:underline block mt-1"
                     >
@@ -216,20 +211,8 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
                     </a>
                   )}
                 </td>
-                <td className="px-6 py-4">
-                  <div className="inline-flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5">
-                      <MapPin size={14} className="text-sky" />
-                      <span className="text-sm font-semibold text-graphite">
-                        {candidate.distanceMiles.toFixed(1)} mi
-                      </span>
-                    </div>
-                    <div className="text-xs text-ink/60 pl-5">
-                      {candidate.commuteEstimate}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
+                {/* REMOVED: Location/Distance TD */}
+                <td className="px-6 py-4" style={{ maxWidth: '200px' }}>
                   <div className="flex flex-wrap gap-1">
                     {candidate.matchedSkills.map((skill, idx) => (
                       <span
@@ -241,26 +224,25 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
                     ))}
                   </div>
                 </td>
-                <td className="px-6 py-4">
-                  <div className="flex flex-col gap-2">
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-mint/20 text-ink rounded-lg w-fit border border-mint/30">
-                      <Award size={14} />
-                      <span className="text-xs font-medium">Overall:</span>
-                      <span className="text-sm font-bold">
+                <td className="px-6 py-4 text-sm">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500 w-12">Overall:</span>
+                      <span className="font-semibold text-gray-900 text-base">
                         {candidate.overallScore}
                       </span>
                     </div>
-                    <div className="text-xs text-ink/60 ml-1">
-                      Skills: <span className="font-semibold text-graphite">{candidate.skillMatchScore}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500 w-12">Skills:</span>
+                      <span className="text-gray-700">{candidate.skillMatchScore}</span>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  
                     <a href={candidate.resumeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sky hover:underline text-sm font-medium"
+                    className="text-blue-600 hover:underline text-sm font-medium"
                   >
                     View Resume
                   </a>

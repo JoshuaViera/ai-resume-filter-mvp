@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseClient';
-import { geocodeAddress, calculateDistance } from '@/lib/geocoding';
+import { getApproximateCoordinatesForAddress, calculateDistanceMiles, estimateCommute } from '@/lib/geoUtils';
 import { parseResumeWithAI, scoreSkillMatch } from '@/lib/resumeParser';
 import { extractTextFromFile } from '@/lib/fileProcessor';
 import { FilterResumesResponse, ProcessingStatus, FilteredCandidate } from '@/types';
@@ -28,15 +28,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Geocoding business address...');
-    const businessLocation = await geocodeAddress(businessAddress);
-    
-    if (!businessLocation) {
-      return NextResponse.json(
-        { success: false, error: 'Could not geocode business address' },
-        { status: 400 }
-      );
-    }
+    console.log('Getting coordinates for business address...');
+    const businessCoords = getApproximateCoordinatesForAddress(businessAddress);
 
     const processingStatuses: ProcessingStatus[] = [];
     const filteredCandidates: FilteredCandidate[] = [];
@@ -75,21 +68,14 @@ export async function POST(request: NextRequest) {
 
         const extractedData = await parseResumeWithAI(resumeText, file.name);
 
-        const candidateLocation = await geocodeAddress(extractedData.address);
-        
-        if (!candidateLocation) {
-          status.status = 'failed';
-          status.error = 'Could not geocode candidate address';
-          continue;
-        }
+        // Get candidate coordinates (handle missing address gracefully)
+        const candidateAddress = extractedData.address || 'NYC'; // fallback to NYC if no address
+        const candidateCoords = getApproximateCoordinatesForAddress(candidateAddress);
 
-        const distanceMiles = calculateDistance(
-          businessLocation.lat,
-          businessLocation.lng,
-          candidateLocation.lat,
-          candidateLocation.lng
-        );
+        const distanceMiles = calculateDistanceMiles(businessCoords, candidateCoords);
+        const commuteEstimate = estimateCommute(distanceMiles);
 
+        // Hard filter by max distance
         if (distanceMiles > maxDistanceMiles) {
           status.status = 'completed';
           console.log(`${file.name} filtered out: ${distanceMiles} miles > ${maxDistanceMiles} miles`);
@@ -109,8 +95,9 @@ export async function POST(request: NextRequest) {
           candidateName: extractedData.candidateName,
           email: extractedData.email,
           phone: extractedData.phone,
-          address: candidateLocation.formattedAddress,
+          address: extractedData.address,
           distanceMiles,
+          commuteEstimate,
           matchedSkills,
           skillMatchScore,
           overallScore,
@@ -154,6 +141,7 @@ export async function POST(request: NextRequest) {
       sessionId,
       results: filteredCandidates,
       totalProcessed: files.length,
+      totalMatched: filteredCandidates.length,
       totalFiltered: filteredCandidates.length,
       processingTime,
       errors: processingStatuses.filter(s => s.status === 'failed'),

@@ -11,11 +11,24 @@ interface ResultsTableProps {
 export default function ResultsTable({ candidates, sessionId }: ResultsTableProps) {
   if (candidates.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-500 text-lg">No candidates matched your criteria</p>
-        <p className="text-gray-400 text-sm mt-2">
-          Try adjusting your keywords or increasing the distance radius
-        </p>
+      <div className="text-center py-16 bg-coral/10 border-2 border-coral rounded-xl">
+        <div className="max-w-md mx-auto space-y-4">
+          <div className="text-6xl mb-4">🔍</div>
+          <h3 className="text-xl font-bold text-graphite mb-2">
+            No candidates matched your criteria
+          </h3>
+          <p className="text-ink/70 text-sm mb-6">
+            No resumes met both your skill requirements and distance filter.
+          </p>
+          <div className="bg-white backdrop-blur-sm rounded-lg p-4 text-left shadow-sm">
+            <p className="text-sm font-semibold text-graphite mb-2">💡 Try these suggestions:</p>
+            <ul className="text-sm text-ink/70 space-y-1 ml-4">
+              <li>• Increase the maximum commute distance</li>
+              <li>• Reduce or adjust your required keywords</li>
+              <li>• Verify candidate resumes include location data</li>
+            </ul>
+          </div>
+        </div>
       </div>
     );
   }
@@ -27,6 +40,7 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
       'Phone',
       'Address',
       'Distance (miles)',
+      'Commute',
       'Matched Skills',
       'Skill Score',
       'Overall Score',
@@ -37,7 +51,8 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
       c.email,
       c.phone,
       c.address,
-      c.distanceMiles.toString(),
+      c.distanceMiles.toFixed(1),
+      c.commuteEstimate,
       c.matchedSkills.join('; '),
       c.skillMatchScore.toString(),
       c.overallScore.toString(),
@@ -59,38 +74,45 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">
-          Filtered Candidates ({candidates.length})
-        </h2>
+      <div className="flex items-center justify-between bg-mint/10 p-4 rounded-lg border border-silver">
+        <div>
+          <h2 className="text-2xl font-bold text-graphite">
+            Top Candidates
+          </h2>
+          <p className="text-sm text-ink/70 mt-1">
+            {candidates.length} {candidates.length === 1 ? 'candidate' : 'candidates'} matched your criteria
+          </p>
+        </div>
         <button
           onClick={downloadCSV}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 bg-sky text-white rounded-lg hover:bg-sky/90 transition-all hover:shadow-md font-medium"
         >
           <Download size={18} />
           Export CSV
         </button>
       </div>
 
-      <div className="space-y-4 lg:hidden">
+      <div className="space-y-3 lg:hidden">
         {candidates.map((candidate) => (
           <div
             key={candidate.id}
-            className="bg-white border border-gray-200 rounded-lg p-4 space-y-3"
+            className="bg-white border border-silver rounded-xl p-5 space-y-3 hover:border-sky transition-colors shadow-sm"
           >
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="font-semibold text-lg text-gray-900">
+                <h3 className="font-semibold text-lg text-graphite">
                   {candidate.candidateName}
                 </h3>
-                <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                  <span className="flex items-center gap-1">
-                    <Award size={14} />
+                <div className="flex items-center gap-3 mt-2">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-mint/20 text-ink text-xs font-medium rounded">
+                    <Award size={12} />
                     Score: {candidate.overallScore}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <MapPin size={14} />
-                    {candidate.distanceMiles} mi
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-sky/10 text-ink text-xs font-medium rounded border border-sky/20">
+                    <MapPin size={12} className="text-sky" />
+                    <span className="font-semibold">{candidate.distanceMiles.toFixed(1)} mi</span>
+                    <span className="text-sky">•</span>
+                    <span>{candidate.commuteEstimate}</span>
                   </span>
                 </div>
               </div>
@@ -100,7 +122,7 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
               {candidate.email && (
                 
                   <a href={`mailto:${candidate.email}`}
-                  className="flex items-center gap-2 text-blue-600 hover:underline"
+                  className="flex items-center gap-2 text-sky hover:underline"
                 >
                   <Mail size={14} />
                   {candidate.email}
@@ -109,7 +131,7 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
               {candidate.phone && (
                 
                   <a href={`tel:${candidate.phone}`}
-                  className="flex items-center gap-2 text-blue-600 hover:underline"
+                  className="flex items-center gap-2 text-sky hover:underline"
                 >
                   <Phone size={14} />
                   {candidate.phone}
@@ -119,12 +141,12 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
 
             {candidate.matchedSkills.length > 0 && (
               <div>
-                <p className="text-xs font-medium text-gray-500 mb-1">Matched Skills:</p>
+                <p className="text-xs font-medium text-ink/60 mb-1">Matched Skills:</p>
                 <div className="flex flex-wrap gap-1">
                   {candidate.matchedSkills.map((skill, idx) => (
                     <span
                       key={idx}
-                      className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded"
+                      className="px-2 py-1 bg-mint/20 text-ink text-xs rounded border border-mint/30"
                     >
                       {skill}
                     </span>
@@ -137,7 +159,7 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
              <a  href={candidate.resumeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block text-sm text-blue-600 hover:underline"
+              className="inline-block text-sm text-sky hover:underline font-medium"
             >
               View Resume
             </a>
@@ -145,42 +167,42 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
         ))}
       </div>
 
-      <div className="hidden lg:block overflow-x-auto">
-        <table className="w-full border-collapse bg-white shadow-sm rounded-lg overflow-hidden">
-          <thead className="bg-gray-50">
+      <div className="hidden lg:block overflow-x-auto rounded-xl border border-silver shadow-sm">
+        <table className="w-full border-collapse bg-white">
+          <thead className="bg-fog">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-graphite uppercase tracking-wider">
                 Candidate
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-graphite uppercase tracking-wider">
                 Contact
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Distance
+              <th className="px-6 py-4 text-left text-xs font-semibold text-graphite uppercase tracking-wider">
+                Distance & Commute
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-graphite uppercase tracking-wider">
                 Matched Skills
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-graphite uppercase tracking-wider">
                 Scores
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-graphite uppercase tracking-wider">
                 Resume
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-silver">
             {candidates.map((candidate) => (
-              <tr key={candidate.id} className="hover:bg-gray-50">
+              <tr key={candidate.id} className="hover:bg-fog transition-colors">
                 <td className="px-6 py-4">
-                  <div className="font-medium text-gray-900">{candidate.candidateName}</div>
-                  <div className="text-sm text-gray-500 mt-1">{candidate.address}</div>
+                  <div className="font-medium text-graphite">{candidate.candidateName}</div>
+                  <div className="text-sm text-ink/60 mt-1">{candidate.address}</div>
                 </td>
                 <td className="px-6 py-4 text-sm">
                   {candidate.email && (
                     
                     <a   href={`mailto:${candidate.email}`}
-                      className="text-blue-600 hover:underline block"
+                      className="text-sky hover:underline block"
                     >
                       {candidate.email}
                     </a>
@@ -188,38 +210,48 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
                   {candidate.phone && (
                     
                       <a href={`tel:${candidate.phone}`}
-                      className="text-blue-600 hover:underline block mt-1"
+                      className="text-sky hover:underline block mt-1"
                     >
                       {candidate.phone}
                     </a>
                   )}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-900">
-                  {candidate.distanceMiles} miles
+                <td className="px-6 py-4">
+                  <div className="inline-flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5">
+                      <MapPin size={14} className="text-sky" />
+                      <span className="text-sm font-semibold text-graphite">
+                        {candidate.distanceMiles.toFixed(1)} mi
+                      </span>
+                    </div>
+                    <div className="text-xs text-ink/60 pl-5">
+                      {candidate.commuteEstimate}
+                    </div>
+                  </div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex flex-wrap gap-1">
                     {candidate.matchedSkills.map((skill, idx) => (
                       <span
                         key={idx}
-                        className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded"
+                        className="px-2 py-1 bg-mint/20 text-ink text-xs rounded border border-mint/30"
                       >
                         {skill}
                       </span>
                     ))}
                   </div>
                 </td>
-                <td className="px-6 py-4 text-sm">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500">Overall:</span>
-                      <span className="font-semibold text-gray-900">
+                <td className="px-6 py-4">
+                  <div className="flex flex-col gap-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-mint/20 text-ink rounded-lg w-fit border border-mint/30">
+                      <Award size={14} />
+                      <span className="text-xs font-medium">Overall:</span>
+                      <span className="text-sm font-bold">
                         {candidate.overallScore}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500">Skills:</span>
-                      <span className="text-gray-700">{candidate.skillMatchScore}</span>
+                    <div className="text-xs text-ink/60 ml-1">
+                      Skills: <span className="font-semibold text-graphite">{candidate.skillMatchScore}</span>
                     </div>
                   </div>
                 </td>
@@ -228,7 +260,7 @@ export default function ResultsTable({ candidates, sessionId }: ResultsTableProp
                     <a href={candidate.resumeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline text-sm"
+                    className="text-sky hover:underline text-sm font-medium"
                   >
                     View Resume
                   </a>

@@ -13,6 +13,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [processingStats, setProcessingStats] = useState<{
     totalProcessed: number;
+    totalMatched: number;
     totalFiltered: number;
     processingTime: number;
   } | null>(null);
@@ -48,6 +49,7 @@ export default function Home() {
       setSessionId(data.sessionId);
       setProcessingStats({
         totalProcessed: data.totalProcessed,
+        totalMatched: data.totalMatched,
         totalFiltered: data.totalFiltered,
         processingTime: data.processingTime,
       });
@@ -68,27 +70,27 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+    <main className="min-h-screen bg-fog py-12 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl font-bold text-graphite mb-4">
             AI Resume Filter
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-ink max-w-2xl mx-auto">
             Filter and rank candidates based on skills and geographic proximity
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-lg p-8 border border-silver">
           {!results && !error && (
             <ResumeUploadForm onSubmit={handleSubmit} isProcessing={isProcessing} />
           )}
 
           {isProcessing && (
             <div className="flex flex-col items-center justify-center py-12">
-              <Loader2 className="animate-spin text-blue-600 mb-4" size={48} />
-              <p className="text-lg text-gray-700 mb-2">Processing resumes...</p>
-              <p className="text-sm text-gray-500">
+              <Loader2 className="animate-spin text-sky mb-4" size={48} />
+              <p className="text-lg text-graphite mb-2">Processing resumes...</p>
+              <p className="text-sm text-ink/70">
                 This may take a few minutes depending on the number of files
               </p>
             </div>
@@ -96,18 +98,18 @@ export default function Home() {
 
           {error && (
             <div className="space-y-4">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-6 flex items-start gap-4">
-                <XCircle className="text-red-600 flex-shrink-0" size={24} />
+              <div className="bg-coral/10 border border-coral rounded-lg p-6 flex items-start gap-4">
+                <XCircle className="text-coral flex-shrink-0" size={24} />
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-red-900 mb-2">
+                  <h3 className="text-lg font-semibold text-coral mb-2">
                     Processing Failed
                   </h3>
-                  <p className="text-red-700">{error}</p>
+                  <p className="text-ink">{error}</p>
                 </div>
               </div>
               <button
                 onClick={resetForm}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                className="w-full bg-sky text-white py-3 rounded-lg font-medium hover:bg-sky/90 transition-colors"
               >
                 Try Again
               </button>
@@ -116,31 +118,38 @@ export default function Home() {
 
           {results && processingStats && (
             <div className="space-y-6">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <CheckCircle className="text-green-600" size={24} />
-                  <h3 className="text-lg font-semibold text-green-900">
-                    Processing Complete!
-                  </h3>
+              <div className="bg-mint/10 border border-mint rounded-xl p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="flex-shrink-0 w-10 h-10 bg-mint rounded-full flex items-center justify-center">
+                    <CheckCircle className="text-white" size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-graphite">
+                      Processing Complete!
+                    </h3>
+                    <p className="text-sm text-ink/70">
+                      Your resumes have been filtered and ranked
+                    </p>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-600">Resumes Processed:</span>
-                    <span className="ml-2 font-semibold text-gray-900">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-white backdrop-blur-sm rounded-lg p-3 border border-silver shadow-sm">
+                    <div className="text-xs text-ink/60 mb-1">Resumes Processed</div>
+                    <div className="text-2xl font-bold text-graphite">
                       {processingStats.totalProcessed}
-                    </span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-gray-600">Candidates Matched:</span>
-                    <span className="ml-2 font-semibold text-gray-900">
-                      {processingStats.totalFiltered}
-                    </span>
+                  <div className="bg-white backdrop-blur-sm rounded-lg p-3 border border-mint shadow-sm">
+                    <div className="text-xs text-ink/60 mb-1">Candidates Matched</div>
+                    <div className="text-2xl font-bold text-mint">
+                      {processingStats.totalMatched}
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-gray-600">Processing Time:</span>
-                    <span className="ml-2 font-semibold text-gray-900">
-                      {(processingStats.processingTime / 1000).toFixed(1)}s
-                    </span>
+                  <div className="bg-white backdrop-blur-sm rounded-lg p-3 border border-silver shadow-sm">
+                    <div className="text-xs text-ink/60 mb-1">Processing Time</div>
+                    <div className="text-2xl font-bold text-graphite">
+                      {(processingStats.processingTime / 1000).toFixed(1)}<span className="text-sm text-ink/50 ml-1">sec</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -149,7 +158,7 @@ export default function Home() {
 
               <button
                 onClick={resetForm}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                className="w-full bg-sky text-white py-3 rounded-lg font-medium hover:bg-sky/90 transition-colors"
               >
                 Start New Search
               </button>

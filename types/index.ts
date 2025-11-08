@@ -30,6 +30,7 @@ export interface FilteredCandidate {
   phone: string;
   address: string;
   distanceMiles: number;
+  commuteEstimate: string;
   matchedSkills: string[];
   skillMatchScore: number;
   overallScore: number;
@@ -83,6 +84,7 @@ export interface FilterResumesResponse {
   sessionId: string;
   results: FilteredCandidate[];
   totalProcessed: number;
+  totalMatched: number;
   totalFiltered: number;
   processingTime: number;
   errors?: ProcessingStatus[];

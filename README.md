@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Resume Filter MVP
 
-## Getting Started
+An AI-powered resume filtering and ranking system for small-to-midsize businesses in NYC.
 
-First, run the development server:
+## Team
 
+- **Project Lead**: Database setup, integration, deployment
+- **Developer 1**: Frontend components and UI
+- **Developer 2**: Backend API and AI logic
+
+## Features
+
+- **Dual-Layer Filtering**: Filters candidates by skills/keywords AND geographic proximity
+- **AI-Powered Parsing**: Uses OpenAI GPT-4 to extract candidate information
+- **Smart Scoring**: Combines skill matching (70%) and location proximity (30%)
+- **Multi-Format Support**: Handles PDF, DOC, DOCX, and TXT files
+- **Real-time Processing**: Processes multiple resumes in a single batch
+- **Export Functionality**: Download results as CSV
+
+## Tech Stack
+
+- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
+- **Backend**: Vercel Serverless Functions
+- **Database**: Supabase (PostgreSQL)
+- **AI**: OpenAI GPT-4 Turbo
+- **Geolocation**: Google Maps Geocoding API
+- **Storage**: Supabase Storage
+
+## Prerequisites
+
+- Node.js 18+ and npm
+- Supabase account
+- OpenAI API key
+- Google Maps API key
+- GitHub account
+
+## Local Development Setup
+
+1. **Clone the repository**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd ai-resume-filter-mvp
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Install dependencies**
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Set up environment variables**
+```bash
+cp .env.local.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Edit `.env.local` with your API keys
 
-## Learn More
+4. **Run development server**
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Git Workflow
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+See the collaboration guide below for detailed Git instructions.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deploy to Vercel - see deployment guide below.

@@ -106,7 +106,7 @@ export default function ResultsTable({ candidates, sessionId, onReset }: Results
           >
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="font-semibold text-lg text-gray-900">
+                <h3 className="font-semibold text-lg text-graphite">
                   {candidate.candidateName}
                 </h3>
                 <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
@@ -122,7 +122,7 @@ export default function ResultsTable({ candidates, sessionId, onReset }: Results
             <div className="space-y-2 text-sm border-t pt-3">
               {candidate.email && (
                   <a href={`mailto:${candidate.email}`}
-                  className="flex items-center gap-2 text-blue-600 hover:underline"
+                  className="flex items-center gap-2 text-sky hover:underline"
                 >
                   <Mail size={14} />
                   {candidate.email}
@@ -130,7 +130,7 @@ export default function ResultsTable({ candidates, sessionId, onReset }: Results
               )}
               {candidate.phone && (
                   <a href={`tel:${candidate.phone}`}
-                  className="flex items-center gap-2 text-blue-600 hover:underline"
+                  className="flex items-center gap-2 text-sky hover:underline"
                 >
                   <Phone size={14} />
                   {candidate.phone}
@@ -145,7 +145,7 @@ export default function ResultsTable({ candidates, sessionId, onReset }: Results
                   {candidate.matchedSkills.map((skill, idx) => (
                     <span
                       key={idx}
-                      className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded"
+                      className="px-2 py-1 bg-mint/20 text-ink text-xs rounded border border-mint/30"
                     >
                       {skill}
                     </span>
@@ -170,25 +170,25 @@ export default function ResultsTable({ candidates, sessionId, onReset }: Results
         <table className="w-full border-collapse bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-graphite uppercase tracking-wider">
                 Candidate
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-graphite uppercase tracking-wider">
                 Contact
               </th>
               {/* REMOVED: Location Header */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Matched Skills
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-graphite uppercase tracking-wider">
                 Scores
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-graphite uppercase tracking-wider">
                 Resume
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-silver">
             {candidates.map((candidate) => (
               <tr key={candidate.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4">
@@ -198,14 +198,14 @@ export default function ResultsTable({ candidates, sessionId, onReset }: Results
                 <td className="px-6 py-4 text-sm">
                   {candidate.email && (
                     <a   href={`mailto:${candidate.email}`}
-                      className="text-blue-600 hover:underline block"
+                      className="text-sky hover:underline block"
                     >
                       {candidate.email}
                     </a>
                   )}
                   {candidate.phone && (
                       <a href={`tel:${candidate.phone}`}
-                      className="text-blue-600 hover:underline block mt-1"
+                      className="text-sky hover:underline block mt-1"
                     >
                       {candidate.phone}
                     </a>
@@ -217,7 +217,7 @@ export default function ResultsTable({ candidates, sessionId, onReset }: Results
                     {candidate.matchedSkills.map((skill, idx) => (
                       <span
                         key={idx}
-                        className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded"
+                        className="px-2 py-1 bg-mint/20 text-ink text-xs rounded border border-mint/30"
                       >
                         {skill}
                       </span>
